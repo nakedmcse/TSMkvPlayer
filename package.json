@@ -1,0 +1,31 @@
+{
+  "name": "tsmkvplayer",
+  "version": "1.0.0",
+  "description": "TS Express Based MKV Player",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc",
+    "run": "ts-node src/mkvplayer.ts",
+    "runjs": "node dist/mkvplayer.js",
+    "update_deps": "npx npm-check-updates"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nakedmcse/TSMkvPlayer.git"
+  },
+  "author": "Walker",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/nakedmcse/TSMkvPlayer/issues"
+  },
+  "homepage": "https://github.com/nakedmcse/TSMkvPlayer#readme",
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "typescript": "^5.7.3"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2"
+  }
+}
