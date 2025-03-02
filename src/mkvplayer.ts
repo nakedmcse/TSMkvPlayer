@@ -30,7 +30,8 @@ mkvplayerAPI.get('/play/:filename/:audioId/:subtitleId', async (req, res) => {
 
     // Use ffmpeg to stream to a pipe with the correct audio and subs
     const pipePath = "/tmp/video_" + uuid();
-    spawn("mkfifo", [pipePath]);
+    const mkfifo = spawn("mkfifo", [pipePath]);
+    await new Promise((resolve, reject) => {mkfifo.on("close",resolve)});
 
     // Ensure the pipe exists
     if (!fs.existsSync(pipePath)) {
@@ -38,26 +39,39 @@ mkvplayerAPI.get('/play/:filename/:audioId/:subtitleId', async (req, res) => {
         res.status(500).send('Error streaming file - could not create fifo');
     }
     else {
-        // Start FFmpeg writing to the named pipe
-        const ffmpeg = spawn("ffmpeg", [
-            "-i", `${process.env.BASEPATH}/${filename}`,
-            "-c", "copy",
-            "-map", "0:v:0",
-            "-map", `0:a:${audioId}`,
-            "-map", `0:s:${subtitleId}`,
-            "-movflags", "+faststart+frag_keyframe+empty_moov",
-            "-f", "mp4",
-            pipePath
-        ]);
-
-        // Redirect to stream of pipe
         try {
-            const fileStream = fs.createReadStream('the_pipe_goes_here');
+            // Open readstream before write
+            const fileStream = fs.createReadStream(pipePath);
+
+            // Start FFmpeg writing to the named pipe
+            const ffmpeg = spawn("ffmpeg", [
+                "-y",
+                "-nostdin",
+                "-i", `${process.env.BASEPATH}/${filename}`,
+                "-map", "0:v:0",
+                "-map", `0:a:${audioId}`,
+                "-vf", `subtitles='${process.env.BASEPATH}/${filename}':si=${subtitleId}`,
+                "-movflags", "+faststart+empty_moov",
+                "-f", "mp4",
+                pipePath
+            ], { stdio: ["ignore", "ignore", "pipe"] });
+
+            ffmpeg.stderr.on("data", (data) => {
+                console.error("FFmpeg error:", data.toString());
+            });
+
+            ffmpeg.on("exit", (code) => {
+                if (code !== 0) console.error(`FFmpeg exited with code ${code}`);
+            });
+
             res.setHeader('Content-Type', 'video/mp4');
             await pipeline(fileStream, res);
-        } catch (error) {
+        }
+        catch (error) {
             console.error("Stream error:", error);
-            res.status(500).send('Error streaming file');
+        }
+        finally {
+            if (fs.existsSync(pipePath)) fs.unlinkSync(pipePath); // Cleanup
         }
     }
 })
