@@ -51,10 +51,10 @@ mkvplayerAPI.get('/play/:filename/:audioId/:subtitleId', async (req, res) => {
                 "-map", "0:v:0",
                 "-map", `0:a:${audioId}`,
                 "-vf", `subtitles='${process.env.BASEPATH}/${filename}':si=${subtitleId}`,
-                "-movflags", "+faststart+frag_keyframe",
-                "-frag_duration", "4000000",
-                "-bufsize", "10M",
-                "-f", "mp4",
+                //"-movflags", "+faststart+frag_keyframe",
+                //"-frag_duration", "4000000",
+                //"-bufsize", "10M",
+                "-f", "webm",
                 pipePath
             ], { stdio: ["ignore", "ignore", "pipe"] });
 
