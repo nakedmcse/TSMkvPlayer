@@ -41,7 +41,7 @@ mkvplayerAPI.get('/play/:filename/:audioId/:subtitleId', async (req, res) => {
     else {
         try {
             // Open readstream before write
-            const fileStream = fs.createReadStream(pipePath);
+            const fileStream = fs.createReadStream(pipePath, { highWaterMark: 10240 * 1024 });
 
             // Start FFmpeg writing to the named pipe
             const ffmpeg = spawn("ffmpeg", [
@@ -51,10 +51,10 @@ mkvplayerAPI.get('/play/:filename/:audioId/:subtitleId', async (req, res) => {
                 "-map", "0:v:0",
                 "-map", `0:a:${audioId}`,
                 "-vf", `subtitles='${process.env.BASEPATH}/${filename}':si=${subtitleId}`,
-                //"-movflags", "+faststart+frag_keyframe",
-                //"-frag_duration", "4000000",
-                //"-bufsize", "10M",
-                "-f", "webm",
+                "-movflags", "+faststart+frag_keyframe",
+                "-frag_duration", "8000000",
+                "-preset", "ultrafast",
+                "-f", "mp4",
                 pipePath
             ], { stdio: ["ignore", "ignore", "pipe"] });
 
