@@ -12,7 +12,7 @@ dotenv.config({
     path: path.resolve(__dirname, "../", ".env")
 })
 
-// Express t
+// Express
 const mkvplayerAPI = express();
 mkvplayerAPI.set('etag', false);
 mkvplayerAPI.use(express.json());
