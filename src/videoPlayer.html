@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Video Player</title>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            background-color: black;
+        }
+    </style>
+</head>
+<body>
+<video id="videoPlayer" controls preload="auto" crossOrigin="anonymous">
+    <source src="http://localhost:3000/playvideo/test.mkv/0" type="video/mp4">
+    <track kind="subtitles" srclang="en" label="English" src="http://localhost:3000/playsubs/test.mkv/0" default>
+</video>
+<script>
+    const video = document.getElementById("videoPlayer");
+    video.addEventListener("error", () => console.error("Video error:", video.error));
+    video.textTracks[0].addEventListener("error", () => console.error("Subtitle error"));
+
+    function resizeVideo() {
+        const video = document.getElementById("videoPlayer");
+        video.style.width = `${window.innerWidth-20}px`;
+        video.style.height = `${window.innerHeight-20}px`;
+    }
+
+    window.addEventListener("resize", resizeVideo);
+    resizeVideo();
+</script>
+</body>
+</html>

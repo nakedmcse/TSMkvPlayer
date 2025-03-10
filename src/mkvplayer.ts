@@ -23,6 +23,79 @@ mkvplayerAPI.listen(process.env.PORT, () => {
 });
 
 // Endpoints
+mkvplayerAPI.get('/playsubs/:filename/:subtitleId', async (req, res) => {
+    const filename = req.params.filename;
+    const subtitleId = parseInt(req.params.subtitleId, 10);
+    console.log('Getting subtitles');
+
+    try {
+        const ffpromise = new Promise<string>((resolve, reject)  => {
+            let output = '';
+            const ffmpeg = spawn("ffmpeg", [
+                "-y",
+                "-nostdin",
+                "-i", `${process.env.BASEPATH}/${filename}`,
+                "-map", `0:s:${subtitleId}`,
+                "-f", "webvtt",
+                "-"
+            ]);
+
+            ffmpeg.stdout.on('data', (data) => {
+                output += data.toString();
+            });
+
+            ffmpeg.on('close', (code) => {
+                if (code !== 0) {
+                    reject(code?.toString());
+                }
+                resolve(output.trim());
+            });
+        });
+
+        res.setHeader("Content-Type", "text/vtt");
+        res.setHeader("Access-Control-Allow-Origin", "*");
+        res.send(await ffpromise);
+    }
+    catch (error) {
+        console.error("Subtitle stream error:", error);
+    }
+})
+
+mkvplayerAPI.get('/playvideo/:filename/:audioId', async (req, res) => {
+    const filename = req.params.filename;
+    const audioId = parseInt(req.params.audioId, 10);
+
+    try {
+        // Start FFmpeg writing to the named pipe
+        const ffmpeg = spawn("ffmpeg", [
+            "-y",
+            "-nostdin",
+            "-i", `${process.env.BASEPATH}/${filename}`,
+            "-map", "0:v:0",
+            "-map", `0:a:${audioId}`,
+            "-c:v", "copy",
+            "-movflags", "+frag_keyframe+empty_moov+default_base_moof",
+            "-frag_duration", "8000000",
+            "-f", "mp4",
+            "pipe:1"
+        ]);
+
+        ffmpeg.stderr.on("data", (data) => {
+            console.error("FFmpeg error:", data.toString());
+        });
+
+        ffmpeg.on("exit", (code) => {
+            if (code !== 0) console.error(`FFmpeg exited with code ${code}`);
+        });
+
+        res.setHeader('Content-Type', 'video/mp4');
+        res.setHeader("Access-Control-Allow-Origin", "*");
+        await pipeline(ffmpeg.stdout, res);
+    } catch (error) {
+            console.error("Stream error:", error);
+    }
+})
+
 mkvplayerAPI.get('/play/:filename/:audioId/:subtitleId', async (req, res) => {
     const filename = req.params.filename;
     const audioId = parseInt(req.params.audioId, 10);
