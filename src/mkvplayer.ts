@@ -4,7 +4,6 @@ import * as path from "node:path";
 import fs from 'node:fs/promises';
 import { pipeline } from 'stream/promises';
 import { spawn } from 'node:child_process'
-import { v4 as uuid } from 'uuid';
 import dotenv from "dotenv";
 
 // Environment
