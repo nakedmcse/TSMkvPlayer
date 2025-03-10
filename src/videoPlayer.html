@@ -15,8 +15,8 @@
 </head>
 <body>
 <video id="videoPlayer" controls preload="auto" crossOrigin="anonymous">
-    <source src="http://localhost:3000/playvideo/test.mkv/0" type="video/mp4">
-    <track kind="subtitles" srclang="en" label="English" src="http://localhost:3000/playsubs/test.mkv/0" default>
+    <source src="http://localhost:3000/playvideo/[filename]/[audioId]" type="video/mp4">
+    <track kind="subtitles" srclang="en" label="English" src="http://localhost:3000/playsubs/[filename]/[subsId]" default>
 </video>
 <script>
     const video = document.getElementById("videoPlayer");
