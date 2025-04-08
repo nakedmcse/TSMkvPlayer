@@ -25,7 +25,6 @@ mkvplayerAPI.listen(process.env.PORT, () => {
 mkvplayerAPI.get('/playsubs/:filename/:subtitleId', async (req, res) => {
     const filename = req.params.filename;
     const subtitleId = parseInt(req.params.subtitleId, 10);
-    console.log('Getting subtitles');
 
     try {
         const ffpromise = new Promise<string>((resolve, reject)  => {
